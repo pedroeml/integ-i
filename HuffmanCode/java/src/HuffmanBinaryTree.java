@@ -115,8 +115,13 @@ public class HuffmanBinaryTree implements Comparable<HuffmanBinaryTree> {
         this.root = new Node('_', 0);
         this.totalFrequency = 0;
         this.size = 1;
-        this.setRootsLeftSubtree(treeA);
-        this.setRootsRightSubtree(treeB);
+        if (treeA.getRoot().getCharacter() == '_' && treeA.getRoot().getFrequency() == 0) {     // This keeps merged trees at the right side of this tree
+            this.setRootsLeftSubtree(treeB);
+            this.setRootsRightSubtree(treeA);
+        } else {
+            this.setRootsLeftSubtree(treeA);
+            this.setRootsRightSubtree(treeB);
+        }
     }
 
     /**
