@@ -3,7 +3,7 @@ import java.util.HashMap;
 public class Main {
 
     public static void main(String[] args) {
-        String sequence = "TAATTAGAAATTCTATTATA";
+        String sequence = "TAATTAGAAATTCATTGATA";
         HuffmanBinaryTree tree = HuffmanBinaryTree.huffmanCode(HuffmanUtils.florestFromSequence(sequence));
         HashMap<Character, String> symbolCodes = tree.symbolCodes();
 

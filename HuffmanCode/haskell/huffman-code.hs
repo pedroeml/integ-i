@@ -53,6 +53,11 @@ totalFrequency :: BinaryTree -> Int
 totalFrequency Null = 0
 totalFrequency (Node _ frequency left right) = frequency + (totalFrequency left) + (totalFrequency right)
 
+numberOfLeafNodes :: BinaryTree -> Int
+numberOfLeafNodes Null = 0
+numberOfLeafNodes (Node _ _ Null Null) = 1
+numberOfLeafNodes (Node _ _ l r) = (numberOfLeafNodes l) + (numberOfLeafNodes r)
+
 frequenciesFromSequence :: String -> Map Char Int
 frequenciesFromSequence (x:xs) = frequenciesFromSequence' xs (singleton x 1)
 	where
@@ -93,19 +98,38 @@ huffmanCode (x:y:ys) = huffmanCode newQueue
 		newTree nodeA nodeB = Node '_' 0 nodeA nodeB
 		newQueue = List.sort (ys ++ [newTree x y])
 
-sampleSequence = "TAATTAGAAATTCTATTATA"
+symbolCodes :: BinaryTree -> Map Char String
+symbolCodes huffman = symbolCodes' empty "" huffman
+	where
+		symbolCodes' :: Map Char String -> String -> BinaryTree -> Map Char String
+		symbolCodes' codes prefix node
+			| isLeaf node = (insert (getCharacter node) prefix codes)
+			| otherwise = union (symbolCodes' codes (prefix ++ "0") (getLeft node)) (symbolCodes' codes (prefix ++ "1") (getRight node)) 
+
+encode :: String -> String
+encode sequence = encode' sequence (huffmanCode (createFlorestFromSequence sequence))
+	where
+		encode' :: String -> BinaryTree -> String
+		encode' sequence huffman = encode'' sequence (symbolCodes huffman) ""
+			where
+				encode'' :: String -> Map Char String -> String -> String
+				encode'' [] _ encoded = encoded
+				encode'' (x:xs) symbolCodes encoded = encode'' xs symbolCodes (encoded ++ (symbolCodes ! x))
+
+decode :: String -> Map Char String -> String
+decode encodedSequence symbolCodes = decode' encodedSequence (invertsSymbolCodes symbolCodes) ""
+	where
+		decode' :: String -> Map String Char -> String -> String
+		decode' [] codesSymbol code = ""
+		decode' (x:xs) codesSymbol code
+			| member newCode codesSymbol = [(codesSymbol ! newCode)] ++ decode' xs codesSymbol ""
+			| otherwise = decode' xs codesSymbol newCode 
+				where
+					newCode = code ++ [x]
+
+sampleSequence = "TAATTAGAAATTCATTGATA"
 sampleFlorest = createFlorestFromSequence sampleSequence
 sampleHuffman = huffmanCode sampleFlorest
-
-{-
-('_', 0, 
-	LEFT=('T', 9, LEFT=null, RIGHT=null), 
-	RIGHT=('_', 0, 
-		LEFT=('A', 9, LEFT=null, RIGHT=null), 
-		RIGHT=('_', 0, 
-			LEFT=('C', 1, LEFT=null, RIGHT=null), 
-			RIGHT=('G', 1, LEFT=null, RIGHT=null)
-			)
-		)
-	)
--}
+sampleSymbolCodes = symbolCodes sampleHuffman
+sampleEncode = encode sampleSequence
+sampleDecode = decode sampleEncode sampleSymbolCodes
